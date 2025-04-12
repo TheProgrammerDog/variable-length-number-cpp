@@ -16,7 +16,8 @@
 namespace IntN_utils {
 
 void integer_to_bytes(std::vector<std::byte>& vector, unsigned long long number);
-    
+std::pair<std::byte, std::byte> byte_adder(const std::byte& byte1, 
+  const std::byte& byte2, const std::byte& carry);
 } // namespace IntN_utils
 
 // General exception for IntN and utils
@@ -32,4 +33,10 @@ class IntNException : public std::exception {
 class IntNExceptionSizeMismatch : public IntNException {
   public:
     IntNExceptionSizeMismatch() : IntNException("the sizes of two elements have dismatched at some point") {}
+};
+
+// Exception when the vector of bytes is smaller than 1 byte (size 0)
+class IntNExceptionMinimalSize : public IntNException {
+  public:
+    IntNExceptionMinimalSize() : IntNException("the size of the vector is smaller than 1, so is empty") {}
 };

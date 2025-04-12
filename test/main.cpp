@@ -2,11 +2,9 @@
 
 #include <cstddef>
 #include <iostream>
+#include <iomanip>
 
 int main() {
-  IntN n(-1000);
-  std::cout << n.get_hex() << std::endl;
-  n.minimize();
-  std::cout << n.get_hex() << std::endl;
 
+  return 0;
 }

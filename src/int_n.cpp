@@ -13,6 +13,7 @@
 
 #include <iostream>
 #include <iomanip>
+#include <cstdint>
 #include <sstream>
 
 IntN::IntN(long long t_num) {
@@ -21,7 +22,6 @@ IntN::IntN(long long t_num) {
     t_num *= -1;
   }
   const unsigned long long numAux = static_cast<unsigned long long>(t_num);
-  std::cout << numAux << std::endl;
   scale_and_clean(sizeof(t_num));
   IntN_utils::integer_to_bytes(m_bytes, numAux);
   minimize();
@@ -32,6 +32,7 @@ IntN::IntN() {
 }
 
 void IntN::scale_and_clean(unsigned long long t_size) {
+  if (t_size == 0) throw(IntNExceptionMinimalSize());
   if (t_size != m_bytes.size()) {
     m_bytes.resize(t_size);
   }
@@ -82,7 +83,7 @@ void IntN::minimize() {
     std::vector<std::byte> auxVector;
     for (const auto& iter : m_bytes) {
       if (std::to_integer<unsigned char>(iter) != 0) {
-        auxVector.push_back(iter);
+        auxVector.emplace_back(iter);
       }
     }
     if (auxVector.size() < m_bytes.size()) { // if same size, nothing to minimize
@@ -92,4 +93,110 @@ void IntN::minimize() {
       scale_and_clean();
     }
   }
+}
+
+IntN operator+(const IntN& t_num1, const IntN& t_num2) {
+  IntN copyNum1 = t_num1;
+  IntN copyNum2 = t_num2;
+  if (copyNum1.size() != copyNum2.size()) make_operable(copyNum1, copyNum2);
+  if (copyNum1.m_sign == copyNum2.m_sign) {
+    
+  }
+}
+
+std::pair<std::byte, std::byte> IntN_utils::byte_adder(const std::byte& byte1, const std::byte& byte2, const std::byte& carry) {
+  uint8_t carryOutNum{0};
+  uint16_t sumOutNum{0};
+
+  sumOutNum = 
+    std::to_integer<uint16_t>(byte1) +
+    std::to_integer<uint16_t>(byte2) +
+    std::to_integer<uint16_t>(carry);
+
+  if (sumOutNum > 255) {
+    carryOutNum = 1;
+    sumOutNum -= 255;
+  }
+
+  std::byte sumOut{static_cast<uint8_t>(sumOutNum)};
+  std::byte carryOut{carryOutNum};
+  return std::make_pair(sumOut, carryOut);
+}
+
+void make_operable(IntN& t_num1, IntN& t_num2) {
+  if (t_num1.size() < t_num2.size()) {
+    t_num1.scale_and_hold(t_num2.size());
+  }
+  else if (t_num2.size() < t_num1.size()) {
+    t_num2.scale_and_hold(t_num1.size());  
+  }
+}
+
+bool minus_than(const IntN& t_num1, const IntN& t_num2) {
+  if (t_num1.m_sign > t_num2.m_sign) return true;
+  else if (t_num2.m_sign > t_num1.m_sign) return false;
+
+  for (int64_t i = (t_num1.size() - 1); i >= 0; --i) {
+    const uint8_t byte1 = std::to_integer<uint8_t>(t_num1.m_bytes.at(i));
+    const uint8_t byte2 = std::to_integer<uint8_t>(t_num2.m_bytes.at(i));
+    if (byte1 < byte2) {
+      return true;
+    }
+    else if (byte2 < byte1) {
+      return false;
+    }
+  }
+  return false; // are equal
+}
+
+bool equal_than(const IntN& t_num1, const IntN& t_num2) {
+  if (t_num1.m_sign != t_num2.m_sign) return false;
+  for (std::size_t i = 0; i < t_num1.size(); ++i) {
+    const uint8_t byte1 = std::to_integer<uint8_t>(t_num1.m_bytes.at(i));
+    const uint8_t byte2 = std::to_integer<uint8_t>(t_num2.m_bytes.at(i));
+    if (byte1 != byte2) return false;
+  }
+  return true;
+}
+
+bool operator<(const IntN& t_num1, const IntN& t_num2) {
+  IntN copyNum1 = t_num1;
+  IntN copyNum2 = t_num2;
+  if (copyNum1.size() != copyNum2.size()) make_operable(copyNum1, copyNum2);
+  return minus_than(copyNum1, copyNum2);
+}
+
+bool operator==(const IntN& t_num1, const IntN& t_num2) {
+  IntN copyNum1 = t_num1;
+  IntN copyNum2 = t_num2;
+  if (copyNum1.size() != copyNum2.size()) make_operable(copyNum1, copyNum2);
+  return equal_than(copyNum1, copyNum2);
+}
+
+bool operator!=(const IntN& t_num1, const IntN& t_num2) {
+  IntN copyNum1 = t_num1;
+  IntN copyNum2 = t_num2;
+  if (copyNum1.size() != copyNum2.size()) make_operable(copyNum1, copyNum2);
+  return (!(equal_than(copyNum1, copyNum2)));
+}
+
+bool operator<=(const IntN& t_num1, const IntN& t_num2) {
+  IntN copyNum1 = t_num1;
+  IntN copyNum2 = t_num2;
+  if (copyNum1.size() != copyNum2.size()) make_operable(copyNum1, copyNum2);
+  return (minus_than(copyNum1, copyNum2) || equal_than(copyNum1, copyNum2));
+}
+
+bool operator>=(const IntN& t_num1, const IntN& t_num2) {
+  IntN copyNum1 = t_num1;
+  IntN copyNum2 = t_num2;
+  if (copyNum1.size() != copyNum2.size()) make_operable(copyNum1, copyNum2);
+  return (!(minus_than(copyNum1, copyNum2)));
+}
+
+bool operator> (const IntN& t_num1, const IntN& t_num2) {
+  IntN copyNum1 = t_num1;
+  IntN copyNum2 = t_num2;
+  if (copyNum1.size() != copyNum2.size()) make_operable(copyNum1, copyNum2);
+  return (!(minus_than(copyNum1, copyNum2) || equal_than(copyNum1, copyNum2)));
 }
