@@ -8,4 +8,7 @@ Special member functions
 - Move constructor
 - Copy assigment operator
 - Move assigment operator
-- Destructor
+- Destructor  
+  
+Compile command  
+g++ -I include/ src/int_n.cpp test/main.cpp -o test.out

@@ -15,9 +15,9 @@
 
 namespace IntN_utils {
 
-  void integer_to_bytes(std::vector<std::byte>& vector, unsigned long long number);
+void integer_to_bytes(std::vector<std::byte>& vector, unsigned long long number);
     
-  } // namespace IntN_utils
+} // namespace IntN_utils
 
 // General exception for IntN and utils
 class IntNException : public std::exception {
@@ -28,6 +28,7 @@ class IntNException : public std::exception {
     std::string m_error_message;
 };
 
+// Exception used when a operation requires same byte size, and it doesn't
 class IntNExceptionSizeMismatch : public IntNException {
   public:
     IntNExceptionSizeMismatch() : IntNException("the sizes of two elements have dismatched at some point") {}
