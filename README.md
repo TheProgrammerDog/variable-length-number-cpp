@@ -13,3 +13,11 @@ Special member functions
   
 Compile command  
 g++ -I include/ src/int_n.cpp test/main.cpp -o test.out
+
+/**
+ * Creator: AnormalDog
+ * License: MIT
+ * 
+ * Implementation file, source code of the class IntN, represents
+ *   a number with variable size
+ */
