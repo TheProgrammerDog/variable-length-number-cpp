@@ -2,55 +2,82 @@
  * Creator: AnormalDog
  * License: MIT
  * 
- * Header file, interface of the class IntN,  represents a number with 
+ * Header file, interface of the class IntN, represents a number with
  *   variable size
  */
 
 #pragma once
 
 #include <cstddef>
-#include <vector>
 #include <string>
+#include <list>
 
 class IntN {
   public:
-    // Constructors
+    // Constructor
     IntN();
-    IntN(long long t_num);
+    IntN(long long t_number);
+
     // Special methods
     IntN(const IntN& t_IntN) = default;
     IntN(IntN&& t_IntN) = default;
     IntN& operator=(const IntN& t_IntN) = default;
     ~IntN() = default;
 
-    // size of the (in bytes) of the number
+    // Getters
     inline std::size_t size() const noexcept {return m_bytes.size();}
-    // Getters (return the number in certain format/base)
     std::string get_hex() const;
 
-    // Operator overloading
-    IntN friend operator+ (const IntN& t_num1, const IntN& t_num2);
-
-    // comparison operators
-    bool friend operator< (const IntN& t_num1, const IntN& t_num2);
-    bool friend operator==(const IntN& t_num1, const IntN& t_num2);
-    bool friend operator!=(const IntN& t_num1, const IntN& t_num2);
-    bool friend operator<=(const IntN& t_num1, const IntN& t_num2);
-    bool friend operator>=(const IntN& t_num1, const IntN& t_num2);
-    bool friend operator> (const IntN& t_num1, const IntN& t_num2);
+    // Comparison operator overloading
+    friend bool operator< (const IntN& t_num1, const IntN& t_num2) noexcept;
+    friend bool operator==(const IntN& t_num1, const IntN& t_num2) noexcept;
 
   private:
     // Atributes
-    std::vector<std::byte> m_bytes; // little endian
-    bool m_sign {0};
+    std::list<std::byte> m_bytes; // little endian
+    bool m_sign {false};
 
-    // Private general methods
-    bool scale_and_hold(unsigned long long t_size); // Scale and try to save old state
-    void scale_and_clean(unsigned long long t_size = 1); // Scale and turns all byte to 0
-    void minimize(); // remove all empty bytes, letting the minimal size
-    friend void make_operable(IntN& t_num1, IntN& t_num2); // convert two numbers into the same size
+    // Private methods
+    inline void resizeAndClean(unsigned long long t_num = 1); // Resize and clean the list
+    inline bool resizeAndTrunc(unsigned long long t_num = 1); // Resize and Trunc/keep the data
+    void minimize(); // Minimize the bytes, discarting zero bytes without value
 
-    // Private method, used as comparitions, suppose nums are operable
-    bool friend minus_than(const IntN& t_num1, const IntN& t_num2);
-    bool friend equal_than(const IntN& t_num1, const IntN& t_num2);
+    static bool minus_than(const IntN& t_num1, const IntN& t_num2);
+    static bool equal_than(const IntN& t_num1, const IntN& t_num2);
+    inline static void make_operable(IntN& t_num1, IntN& t_num2);
+
 };
+
+namespace IntNUtils {
+
+class IntNException : public std::exception {
+  public:
+    IntNException(const std::string& t_message) : m_errorMessage(t_message) {}
+    const char* what() const noexcept override {return m_errorMessage.c_str();}
+  private:
+    std::string m_errorMessage;
+};
+
+class IntNExceptionMismatch : public IntNException {
+  public:
+    IntNExceptionMismatch() : IntNException("two number are trying to operate with different sizes") {}
+};
+
+} // namespace
+
+// Inline functions
+void IntN::resizeAndClean(unsigned long long t_num) {
+  m_bytes.clear();
+  m_bytes.resize(t_num, std::byte{0});
+}
+
+bool IntN::resizeAndTrunc(unsigned long long t_num) {
+  bool fitted = (t_num >= m_bytes.size()) ? true : false;
+  m_bytes.resize(t_num, std::byte{0});
+  return fitted;
+}
+
+void IntN::make_operable(IntN& t_num1, IntN& t_num2) {
+  if (t_num1.size() < t_num2.size()) t_num1.resizeAndTrunc(t_num2.size());
+  else if (t_num1.size() > t_num2.size()) t_num2.resizeAndTrunc(t_num1.size());
+}
