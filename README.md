@@ -12,7 +12,7 @@ Special member functions
 - Destructor  
   
 Compile command  
-g++ -I include/ src/int_n.cpp test/main.cpp -o test.out
+g++ -I lib/IntN/ lib/IntN/IntN.cpp test/test.cpp -o test.out  
 
 /**
  * Creator: AnormalDog
