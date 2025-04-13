@@ -8,6 +8,7 @@
 
 #pragma once
 
+#include <exception>
 #include <cstddef>
 #include <string>
 #include <list>
