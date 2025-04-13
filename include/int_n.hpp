@@ -32,20 +32,36 @@ class IntN {
     // Comparison operator overloading
     friend bool operator< (const IntN& t_num1, const IntN& t_num2) noexcept;
     friend bool operator==(const IntN& t_num1, const IntN& t_num2) noexcept;
+    friend bool operator> (const IntN& t_num1, const IntN& t_num2) noexcept;
+    friend bool operator<=(const IntN& t_num1, const IntN& t_num2) noexcept;
+    friend bool operator>=(const IntN& t_num1, const IntN& t_num2) noexcept;
+    friend bool operator!=(const IntN& t_num1, const IntN& t_num2) noexcept;
+
+    // Arithmetic operator overloading
+    friend IntN operator+ (const IntN& t_num1, const IntN& t_num2);
+    friend IntN operator- (const IntN& t_num1, const IntN& t_num2);
+    IntN& operator++();
+    IntN operator++ (int);
 
   private:
     // Atributes
     std::list<std::byte> m_bytes; // little endian
     bool m_sign {false};
 
-    // Private methods
+    // Private methods - size related
     inline void resizeAndClean(unsigned long long t_num = 1); // Resize and clean the list
     inline bool resizeAndTrunc(unsigned long long t_num = 1); // Resize and Trunc/keep the data
     void minimize(); // Minimize the bytes, discarting zero bytes without value
 
-    static bool minus_than(const IntN& t_num1, const IntN& t_num2);
-    static bool equal_than(const IntN& t_num1, const IntN& t_num2);
-    inline static void make_operable(IntN& t_num1, IntN& t_num2);
+    inline static void makeOperable(IntN& t_num1, IntN& t_num2);
+    // Private methods - logical related
+    static bool minusThan(const IntN& t_num1, const IntN& t_num2);
+    static bool equalThan(const IntN& t_num1, const IntN& t_num2);
+    // Private methods - arithmetic related
+    static IntN addition(const IntN& t_num1, const IntN& t_num2);
+    inline static std::pair<std::byte, std::byte> byteAdder(const std::byte& t_num1, const std::byte& t_num2, const std::byte& t_carryIn);
+    static IntN complement2(const IntN& t_num);
+    inline bool resizeAndTruncComplement(unsigned long long t_num = 1);
 
 };
 
@@ -78,7 +94,29 @@ bool IntN::resizeAndTrunc(unsigned long long t_num) {
   return fitted;
 }
 
-void IntN::make_operable(IntN& t_num1, IntN& t_num2) {
+void IntN::makeOperable(IntN& t_num1, IntN& t_num2) {
   if (t_num1.size() < t_num2.size()) t_num1.resizeAndTrunc(t_num2.size());
   else if (t_num1.size() > t_num2.size()) t_num2.resizeAndTrunc(t_num1.size());
+}
+
+std::pair<std::byte, std::byte> IntN::byteAdder(const std::byte& t_num1, const std::byte& t_num2, const std::byte& t_carryIn) {
+  unsigned short addition = 
+    std::to_integer<unsigned short>(t_num1) + 
+    std::to_integer<unsigned short>(t_num2) + 
+    std::to_integer<unsigned short>(t_carryIn);
+  if (addition > 255) {
+    std::byte add {static_cast<unsigned char>(addition - 256)};
+    std::byte carry {static_cast<unsigned char>(1)};
+    return std::make_pair(add, carry);
+  }
+
+  std::byte add {static_cast<unsigned char>(addition)};
+  std::byte carry {static_cast<unsigned char>(0)};
+  return std::make_pair(add, carry);
+}
+
+bool IntN::resizeAndTruncComplement(unsigned long long t_num = 1) {
+  bool fitted = (t_num >= m_bytes.size()) ? true : false;
+  m_bytes.resize(t_num, std::byte{255});
+  return fitted;
 }

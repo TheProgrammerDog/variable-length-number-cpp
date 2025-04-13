@@ -5,10 +5,9 @@
 #include <iomanip>
 
 int main() {
-  IntN num1(499);
-  IntN num2(498);
-  std::cout << std::boolalpha;
-  std::cout << (num1 < num2) << std::endl;
-  std::cout << (num1 == num2) << std::endl;
+  IntN num1(-500);
+  std::cout << num1.get_hex() << std::endl;
+  std::cout << IntN::complement2(num1).get_hex() << std::endl;
+  
   return 0;
 }
