@@ -18,10 +18,16 @@ class IntN {
     // Constructor
     IntN();
     IntN(const long long t_num);
+    
     // Special methods
     ~IntN() = default;
     IntN(const IntN&) = default;
     IntN& operator=(const IntN&) = default;
+
+    // Assignment
+    friend IntN& operator+=(IntN& t_num1, const IntN& t_num2);
+    friend IntN& operator-=(IntN& t_num1, const IntN& t_num2);
+    friend IntN& operator*=(IntN& t_num1, const IntN& t_num2);
 
     // Getters
     std::string hex() const noexcept; // return string with hex in big endian

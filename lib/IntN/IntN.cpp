@@ -304,3 +304,18 @@ IntN operator* (const IntN& t_num1, const IntN& t_num2) {
   else if (t_num2.size() > t_num1.size()) return IntN::multiplication(t_num2, t_num1);
   return IntN::multiplication(t_num1, t_num2);
 }
+
+IntN& operator+=(IntN& t_num1, const IntN& t_num2) {
+  t_num1 = t_num1 + t_num2;
+  return t_num1;
+}
+
+IntN& operator-=(IntN& t_num1, const IntN& t_num2) {
+  t_num1 = t_num1 - t_num2;
+  return t_num1;
+}
+
+IntN& operator*=(IntN& t_num1, const IntN& t_num2) {
+  t_num1 = t_num1 * t_num2;
+  return t_num1;
+}
