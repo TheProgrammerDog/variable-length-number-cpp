@@ -41,6 +41,7 @@ class IntN {
 
     // Arithmetic operator overloading
     friend IntN operator+(const IntN& t_num1, const IntN& t_num2);
+    friend IntN operator-(const IntN& t_num1, const IntN& t_num2);
 
     // Increment/decrement operator overloading
     IntN& operator++();

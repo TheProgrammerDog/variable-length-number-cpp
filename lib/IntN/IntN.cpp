@@ -179,15 +179,25 @@ IntN& IntN::operator++() {
 
 IntN IntN::operator++(int) {
   IntN prev = *this;
-  ++*this;
+  ++(*this);
   return prev;
 }
 
-IntN operator+(const IntN& t_num1, const IntN& t_num2) {
-  std::pair<IntN, IntN> vars;
-  if (t_num1.size() == t_num2.size()) vars = {t_num1, t_num2};
-  else vars = IntN::getOperable(t_num1, t_num2);
-  return IntN::addition(vars.first, vars.second);
+IntN& IntN::operator--() {
+  auto iter = m_bytes.begin();
+  std::pair<uint8_t, uint8_t> partialSub {0, 0};
+  while (iter != m_bytes.end()) {
+    partialSub = byteAdder(*iter, 0xFF, partialSub.second);
+    *iter = partialSub.first;
+    ++iter;
+  }
+  return *this;
+}
+
+IntN IntN::operator--(int) {
+  IntN prev = *this;
+  --(*this);
+  return prev;
 }
 
 IntN IntN::addition(const IntN& t_num1, const IntN& t_num2) {
@@ -214,4 +224,27 @@ bool IntN::setSize(const size_t t_size) {
     else return false;
   }
   return true;
+}
+
+void IntN::complement2() {
+  auto iter = m_bytes.begin();
+  while (iter != m_bytes.end()) {
+    *iter = ~(*iter);
+  }
+  ++(*this);
+}
+
+IntN operator+(const IntN& t_num1, const IntN& t_num2) {
+  std::pair<IntN, IntN> vars;
+  if (t_num1.size() == t_num2.size()) vars = {t_num1, t_num2};
+  else vars = IntN::getOperable(t_num1, t_num2);
+  return IntN::addition(vars.first, vars.second);
+}
+
+IntN operator-(const IntN& t_num1, const IntN& t_num2) {
+  std::pair<IntN, IntN> vars;
+  if (t_num1.size() == t_num2.size()) vars = {t_num1, t_num2};
+  else vars = IntN::getOperable(t_num1, t_num2);
+  vars.second.complement2();
+  return IntN::addition(vars.first, vars.second);  
 }
