@@ -27,9 +27,8 @@ bool IntN::ResizeAndTrunc(const std::size_t size) {
   const bool hasBeenTrunced = (size < m_bytes.size()) ? true : false;
   if (isNegative()) {
     m_bytes.resize(size, UINT8_MAX);
-    return hasBeenTrunced;
   }
-  m_bytes.resize(size, 0);
+  else m_bytes.resize(size, 0);
   return hasBeenTrunced;
 }
 
@@ -164,4 +163,55 @@ std::pair<uint8_t, uint8_t> IntN::byteAdder(const uint8_t t_byte1, const uint8_t
       return std::make_pair(static_cast<uint8_t>(partialAdder - 0x100), 0x01);
   }
   return std::make_pair(static_cast<uint8_t>(partialAdder), 0x00);
+}
+
+IntN& IntN::operator++() {
+  auto iter = m_bytes.begin();
+  std::pair<uint8_t, uint8_t> partialSum {0, 0};
+  while (iter != m_bytes.end()) {
+    partialSum = byteAdder(*iter, 1, 0);
+    *iter = partialSum.first;
+    if (partialSum.second == 0x00) break;
+    ++iter;
+  }
+  return *this;
+}
+
+IntN IntN::operator++(int) {
+  IntN prev = *this;
+  ++*this;
+  return prev;
+}
+
+IntN operator+(const IntN& t_num1, const IntN& t_num2) {
+  std::pair<IntN, IntN> vars;
+  if (t_num1.size() == t_num2.size()) vars = {t_num1, t_num2};
+  else vars = IntN::getOperable(t_num1, t_num2);
+  return IntN::addition(vars.first, vars.second);
+}
+
+IntN IntN::addition(const IntN& t_num1, const IntN& t_num2) {
+  if (t_num1.size() != t_num2.size()) throw(IntNUtils::IntNExceptionSizeMismatch());
+  auto iterNum1 = t_num1.m_bytes.begin();
+  auto iterNum2 = t_num2.m_bytes.begin();
+  std::pair<uint8_t, uint8_t> partialSum{0,0};
+  std::list<uint8_t> auxList;
+  while (iterNum1 != t_num1.m_bytes.end() || iterNum2 != t_num2.m_bytes.end()) {
+    partialSum = byteAdder(*iterNum1, *iterNum2, partialSum.second);
+    auxList.emplace_back(partialSum.first);
+    ++iterNum2;
+    ++iterNum1;
+  }
+  IntN toReturn;
+  toReturn.m_bytes = auxList;
+  return toReturn;
+}
+
+bool IntN::setSize(const size_t t_size) {
+  IntN prev = *this;
+  if (ResizeAndTrunc(t_size)) {
+    if (*this == prev) return true;
+    else return false;
+  }
+  return true;
 }

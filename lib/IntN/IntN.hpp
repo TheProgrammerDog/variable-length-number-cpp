@@ -29,15 +29,24 @@ class IntN {
     inline bool isNegative() const noexcept {return ((m_bytes.back() >> 7) == 0x01) ? true : false;};
 
     // Setters
-    inline bool setSize(const size_t t_size) { return ResizeAndTrunc(t_size);}
+    bool setSize(const size_t t_size);
 
-    // Logical operator overloading
+    // Comparison operator overloading
     friend bool operator< (const IntN& t_num1, const IntN& t_num2);
     friend bool operator==(const IntN& t_num1, const IntN& t_num2);
     friend bool operator!=(const IntN& t_num1, const IntN& t_num2);
     friend bool operator<=(const IntN& t_num1, const IntN& t_num2);
     friend bool operator> (const IntN& t_num1, const IntN& t_num2);
     friend bool operator>=(const IntN& t_num1, const IntN& t_num2);
+
+    // Arithmetic operator overloading
+    friend IntN operator+(const IntN& t_num1, const IntN& t_num2);
+
+    // Increment/decrement operator overloading
+    IntN& operator++();
+    IntN  operator++(int);
+    IntN& operator--();
+    IntN  operator--(int);
 
   private:
     // Attributes
@@ -50,13 +59,15 @@ class IntN {
     void loadNum(const long long t_num) noexcept;
     static std::pair<IntN, IntN> getOperable(const IntN& t_num1, const IntN& t_num2);
 
-    // Logical private methods
+    // Comparison private methods
     static bool minusThan(const IntN& t_num1, const IntN& t_num2);
     static bool equalThan(const IntN& t_num1, const IntN& t_num2);
     static bool minusEqualThan(const IntN& t_num1, const IntN& t_num2);
 
     // Arithmetic private methods
+    void complement2();
     static std::pair<uint8_t, uint8_t> byteAdder(const uint8_t t_byte1, const uint8_t t_byte2, const uint8_t t_carry_in);
+    static IntN addition(const IntN& t_num1, const IntN& t_num2);
 };
 
 namespace IntNUtils {
