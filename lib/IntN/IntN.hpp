@@ -25,15 +25,38 @@ class IntN {
 
     // Getters
     std::string hex() const noexcept; // return string with hex in big endian
+    inline std::size_t size() const noexcept {return m_bytes.size();}
+    inline bool isNegative() const noexcept {return ((m_bytes.back() >> 7) == 0x01) ? true : false;};
+
+    // Setters
+    inline bool setSize(const size_t t_size) { return ResizeAndTrunc(t_size);}
+
+    // Logical operator overloading
+    friend bool operator< (const IntN& t_num1, const IntN& t_num2);
+    friend bool operator==(const IntN& t_num1, const IntN& t_num2);
+    friend bool operator!=(const IntN& t_num1, const IntN& t_num2);
+    friend bool operator<=(const IntN& t_num1, const IntN& t_num2);
+    friend bool operator> (const IntN& t_num1, const IntN& t_num2);
+    friend bool operator>=(const IntN& t_num1, const IntN& t_num2);
+
   private:
     // Attributes
     std::list<uint8_t> m_bytes; // little endian
     constexpr static std::size_t m_defaultSize {sizeof(long long)};
     
     // Private methods
-    inline void ResizeAndClean(const std::size_t t_size = IntN::m_defaultSize);
+    void ResizeAndClean(const std::size_t t_size = IntN::m_defaultSize);
     bool ResizeAndTrunc(const std::size_t t_size = IntN::m_defaultSize);
-    inline void loadNum(const long long t_num) noexcept;
+    void loadNum(const long long t_num) noexcept;
+    static std::pair<IntN, IntN> getOperable(const IntN& t_num1, const IntN& t_num2);
+
+    // Logical private methods
+    static bool minusThan(const IntN& t_num1, const IntN& t_num2);
+    static bool equalThan(const IntN& t_num1, const IntN& t_num2);
+    static bool minusEqualThan(const IntN& t_num1, const IntN& t_num2);
+
+    // Arithmetic private methods
+    static std::pair<uint8_t, uint8_t> byteAdder(const uint8_t t_byte1, const uint8_t t_byte2, const uint8_t t_carry_in);
 };
 
 namespace IntNUtils {
@@ -58,17 +81,4 @@ class IntNExceptionMinimalSize : public IntNException {
 
 } // namespace IntNUtils
 
-// Inline methods and functions
-void IntN::ResizeAndClean(const std::size_t size) {
-  if (size == 0) throw(IntNUtils::IntNExceptionSizeMismatch());
-  m_bytes.clear();
-  m_bytes.resize(size, 0);
-}
-
-void IntN::loadNum(const long long t_num) noexcept {
-  m_bytes.clear();
-  for (std::size_t i = 0; i < sizeof(t_num); ++i) {
-    // the 8 is the number of bits in a byte :)
-    m_bytes.emplace_back((t_num) >> 8 * i);
-  }
-}
+// Inline is the cake
