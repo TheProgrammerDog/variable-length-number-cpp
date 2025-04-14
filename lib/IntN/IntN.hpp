@@ -42,6 +42,7 @@ class IntN {
     // Arithmetic operator overloading
     friend IntN operator+(const IntN& t_num1, const IntN& t_num2);
     friend IntN operator-(const IntN& t_num1, const IntN& t_num2);
+    friend IntN operator*(const IntN& t_num1, const IntN& t_num2);
 
     // Increment/decrement operator overloading
     IntN& operator++();
@@ -68,7 +69,9 @@ class IntN {
     // Arithmetic private methods
     void complement2();
     static std::pair<uint8_t, uint8_t> byteAdder(const uint8_t t_byte1, const uint8_t t_byte2, const uint8_t t_carry_in);
+    static std::pair<uint8_t, uint8_t> byteMultiplier(const uint8_t t_byte1, const uint8_t t_byte2, const uint8_t t_carry_in);
     static IntN addition(const IntN& t_num1, const IntN& t_num2);
+    static IntN multiplication(const IntN& t_num1, const IntN& t_num2);
 };
 
 namespace IntNUtils {
@@ -92,5 +95,3 @@ class IntNExceptionMinimalSize : public IntNException {
 };
 
 } // namespace IntNUtils
-
-// Inline is the cake

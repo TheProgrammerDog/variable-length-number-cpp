@@ -11,6 +11,7 @@
 #include <algorithm>
 #include <sstream>
 #include <iomanip>
+#include <iostream>
 #include <climits>
 
 IntN::IntN() {
@@ -230,6 +231,7 @@ void IntN::complement2() {
   auto iter = m_bytes.begin();
   while (iter != m_bytes.end()) {
     *iter = ~(*iter);
+    ++iter;
   }
   ++(*this);
 }
@@ -247,4 +249,58 @@ IntN operator-(const IntN& t_num1, const IntN& t_num2) {
   else vars = IntN::getOperable(t_num1, t_num2);
   vars.second.complement2();
   return IntN::addition(vars.first, vars.second);  
+}
+
+std::pair<uint8_t, uint8_t> IntN::byteMultiplier(const uint8_t t_byte1, const uint8_t t_byte2, const uint8_t t_carry_in) {
+  const uint16_t partialMult = static_cast<uint16_t>(t_byte1) * static_cast<uint16_t>(t_byte2) + static_cast<uint16_t>(t_carry_in);
+  std::pair<uint8_t, uint8_t> mulCarry;
+  mulCarry.first = static_cast<uint8_t>(partialMult);
+  mulCarry.second = static_cast<uint8_t>(partialMult >> 8);
+  return mulCarry;
+}
+
+IntN IntN::multiplication(const IntN& t_num1, const IntN& t_num2) {
+  // assumes t_num1 is bigger than t_num2 (in bytes) (better perfomance)
+  IntN auxNum1 = t_num1;
+  IntN auxNum2 = t_num2;
+  // Be sure both number are positives for correct multiplication
+  // This make sure there is not overflow during byteMultiplier
+  if (auxNum1.isNegative()) auxNum1.complement2(); 
+  if (auxNum2.isNegative()) auxNum2.complement2();
+  std::pair<uint8_t, uint8_t> partialMul(0, 0);
+  std::list<IntN> toAdd; // List of all the sums will be made
+  std::list<uint8_t> partialMulAllBytes; // aux list to make the Intn for the su,
+  auto multipler = auxNum1.m_bytes.begin();
+  auto multiplicand = auxNum2.m_bytes.begin();
+  while (multiplicand != auxNum2.m_bytes.end()) {
+    while (multipler != auxNum1.m_bytes.end()) {
+      partialMul = byteMultiplier(*multipler, *multiplicand, partialMul.second);
+      partialMulAllBytes.emplace_back(partialMul.first);
+      ++multipler;
+    }
+    // Creating the new IntN for the sum
+    IntN aux;
+    aux.setSize(t_num1.size()); // make sure all are the same size for better perfomance
+    aux.m_bytes = partialMulAllBytes; // Copy the bytes
+     // Emplace back onto the list
+    toAdd.emplace_back(aux);
+    // Clear for next iteration
+    partialMulAllBytes.clear();
+    multipler = auxNum1.m_bytes.begin();
+    ++multiplicand;
+  }
+  IntN result(0);
+  // Sum all results
+  for (const auto& iter : toAdd) {
+    result = result + iter;
+  }
+  // Return
+  if (t_num1.isNegative() != t_num2.isNegative()) result.complement2();
+  return result;
+}
+
+IntN operator* (const IntN& t_num1, const IntN& t_num2) {
+  if (t_num1.size() > t_num2.size()) return IntN::multiplication(t_num1, t_num2);
+  else if (t_num2.size() > t_num1.size()) return IntN::multiplication(t_num2, t_num1);
+  return IntN::multiplication(t_num1, t_num2);
 }

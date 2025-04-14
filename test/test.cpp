@@ -3,8 +3,9 @@
 #include <iomanip>
 
 int main() {
-  for (IntN i(50); i >= IntN(0); --i) {
-    std::cout << i.hex() << std::endl;
-  }
-  return 0;
+  IntN i (-0xFF);
+  IntN j (0xFF);
+  j.setSize(4);
+  std::cout << (i * j).hex() << std::endl;
+
 }
