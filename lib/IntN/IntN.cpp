@@ -13,6 +13,8 @@
 #include <iomanip>
 #include <iostream>
 #include <climits>
+#include <vector>
+#include <bitset>
 
 IntN::IntN() {
   ResizeAndClean();
@@ -259,6 +261,7 @@ std::pair<uint8_t, uint8_t> IntN::byteMultiplier(const uint8_t t_byte1, const ui
   return mulCarry;
 }
 
+// FALTA EL DESPLAZAMIENTO A LA IZQUIERDA (de 1 byte (8bits))
 IntN IntN::multiplication(const IntN& t_num1, const IntN& t_num2) {
   // assumes t_num1 is bigger than t_num2 (in bytes) (better perfomance)
   IntN auxNum1 = t_num1;
@@ -272,6 +275,7 @@ IntN IntN::multiplication(const IntN& t_num1, const IntN& t_num2) {
   std::list<uint8_t> partialMulAllBytes; // aux list to make the Intn for the su,
   auto multipler = auxNum1.m_bytes.begin();
   auto multiplicand = auxNum2.m_bytes.begin();
+  uint64_t indexByteWise = 0;
   while (multiplicand != auxNum2.m_bytes.end()) {
     while (multipler != auxNum1.m_bytes.end()) {
       partialMul = byteMultiplier(*multipler, *multiplicand, partialMul.second);
@@ -282,12 +286,15 @@ IntN IntN::multiplication(const IntN& t_num1, const IntN& t_num2) {
     IntN aux;
     aux.setSize(t_num1.size()); // make sure all are the same size for better perfomance
     aux.m_bytes = partialMulAllBytes; // Copy the bytes
-     // Emplace back onto the list
+    // Emplace back onto the list
+    aux = leftByteWise(aux, indexByteWise); // Move one position(byte) to the left
+    
     toAdd.emplace_back(aux);
     // Clear for next iteration
     partialMulAllBytes.clear();
     multipler = auxNum1.m_bytes.begin();
     ++multiplicand;
+    ++indexByteWise;
   }
   IntN result(0);
   // Sum all results
@@ -318,4 +325,62 @@ IntN& operator-=(IntN& t_num1, const IntN& t_num2) {
 IntN& operator*=(IntN& t_num1, const IntN& t_num2) {
   t_num1 = t_num1 * t_num2;
   return t_num1;
+}
+
+IntN leftByteWise(const IntN& t_num1, const std::size_t shift) {
+  if (shift == 0) return t_num1;
+  std::vector<uint8_t> auxVector;
+  auxVector.resize(t_num1.size());
+  IntN toReturn;
+  toReturn.m_bytes.clear();
+  int vectorIteratorAux = 0;
+  auto IterNum1 = t_num1.m_bytes.rbegin();
+  while (IterNum1 != t_num1.m_bytes.rend()) {
+    auxVector[vectorIteratorAux] = *IterNum1;
+    ++IterNum1;
+    ++vectorIteratorAux;
+  }
+  for (std::size_t i = 0; i < auxVector.size(); ++i) {
+    const int newPosition = i - shift;
+    if (newPosition < 0) {
+      auxVector[i] = 0x00;
+      continue;
+    }
+    auxVector[newPosition] = auxVector[i];
+    auxVector[i] = 0x00;
+  }
+  for (auto iter : auxVector) {
+    toReturn.m_bytes.emplace_front(iter);
+  }
+  return toReturn;
+}
+
+// In ByteWise operations, also change the direction of start of the main loop
+
+IntN rightByteWise(const IntN& t_num1, const std::size_t shift) {
+  if (shift == 0) return t_num1;
+  std::vector<uint8_t> auxVector;
+  auxVector.resize(t_num1.size());
+  IntN toReturn;
+  toReturn.m_bytes.clear();
+  int vectorIteratorAux = 0;
+  auto IterNum1 = t_num1.m_bytes.rbegin();
+  while (IterNum1 != t_num1.m_bytes.rend()) {
+    auxVector[vectorIteratorAux] = *IterNum1;
+    ++IterNum1;
+    ++vectorIteratorAux;
+  }
+  for (int i = auxVector.size() - 1; i >= 0; --i) {
+    const std::size_t newPosition = i + shift;
+    if (newPosition >= auxVector.size()) {
+      auxVector[i] = 0x00;
+      continue;
+    }
+    auxVector[newPosition] = auxVector[i];
+    auxVector[i] = 0x00;
+  }
+  for (auto iter : auxVector) {
+    toReturn.m_bytes.emplace_front(iter);
+  }
+  return toReturn;
 }

@@ -18,7 +18,7 @@ class IntN {
     // Constructor
     IntN();
     IntN(const long long t_num);
-    
+
     // Special methods
     ~IntN() = default;
     IntN(const IntN&) = default;
@@ -46,9 +46,12 @@ class IntN {
     friend bool operator>=(const IntN& t_num1, const IntN& t_num2);
 
     // Arithmetic operator overloading
-    friend IntN operator+(const IntN& t_num1, const IntN& t_num2);
-    friend IntN operator-(const IntN& t_num1, const IntN& t_num2);
-    friend IntN operator*(const IntN& t_num1, const IntN& t_num2);
+    friend IntN operator+ (const IntN& t_num1, const IntN& t_num2);
+    friend IntN operator- (const IntN& t_num1, const IntN& t_num2);
+    friend IntN operator* (const IntN& t_num1, const IntN& t_num2);
+
+    friend IntN leftByteWise(const IntN& t_num1, const std::size_t shift);
+    friend IntN rightByteWise(const IntN& t_num1, const std::size_t shift);
 
     // Increment/decrement operator overloading
     IntN& operator++();
@@ -98,6 +101,16 @@ class IntNExceptionSizeMismatch : public IntNException {
 class IntNExceptionMinimalSize : public IntNException {
   public:
     IntNExceptionMinimalSize() : IntNException("trying to resize a IntN to 0 bytes") {}
+};
+
+class IntNExceptionLimitReached : public IntNException {
+  public:
+    IntNExceptionLimitReached() : IntNException("Numerical limit has been reached") {}
+};
+
+class IntNExceptionShiftLimit : public IntNException {
+  public:
+    IntNExceptionShiftLimit(): IntNException("Maximal shift reached(" + std::to_string(sizeof(uint64_t) * 8) + ")") {}
 };
 
 } // namespace IntNUtils
